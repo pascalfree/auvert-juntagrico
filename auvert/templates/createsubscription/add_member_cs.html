@@ -1,53 +1,41 @@
-{% extends "no_menu_base.html" %}
+{% extends "juntagrico/signup/base.html" %}
 {% load i18n %}
-{% load juntagrico.config %}
 {% load crispy_forms_tags %}
-{% block all_page_title %}
-    {% vocabulary "co_member" as v_co_member %}
-    <div class="page-title offset-md-2 col-md-8">
-        <h3>
-            {% blocktrans %}{{ v_co_member }} hinzufügen{% endblocktrans %}
-        </h3>
-    </div>
+
+{% block title %}
+    {% blocktrans with v_co_member=vocabulary.co_member %}{{ v_co_member }} hinzufügen{% endblocktrans %}
 {% endblock %}
-{% block allcontent %}
-    {% vocabulary "subscription" as v_subscription %}
-    {% vocabulary "member_pl" as v_member_pl %}
-    {% vocabulary "member_type_pl" as v_member_type_pl %}
-    {% vocabulary "co_member" as v_co_member %}
-    {% vocabulary "co_member_pl" as v_co_member_pl %}
-    <div class="offset-md-2 col-md-8">
-        <div class="row mb-4">
-            <div class="col-md-12">
-                {% blocktrans trimmed %}
-                Bitte trage unten alle {{ v_co_member }} (z.B. Personen im gleichen Haushalt die auch 
-                Arbeitseinsätze übernehmen) ein, welche einen Zugang zum Mitgliederbereich von auVert🥕 
-                erhalten sollen, um gemeinsam die Arbeitseinsätze leisten zu können.
-                {% endblocktrans %}
-                <br/><br/>
-                {% blocktrans trimmed %}
-                Fülle bitte die untenstehenden Felder aus und klicke anschliessend auf "{{ v_co_member }} hinzufügen". 
-                Falls du keine {{ v_co_member_pl }} hinzufügen möchtest, klicke auf "Überspringen". 
-                Wenn du alle {{ v_co_member_pl }} hinzugefügt hast, klicke auf "Überspringen".
-                {% endblocktrans %}
-            </div>
-        </div>
 
-        <form action="" method="post" id="new_member" novalidate>
-            {% crispy form %}
-        </form>
+{% block intro %}
+    <p>
+        {% blocktrans trimmed with v_subscription=vocabulary.subscription v_co_member=vocabulary.co_member %}
+        Du kannst weitere {{ v_subscription }}-BezieherInnen als {{ v_co_member }} hinzufügen. Fülle bitte die
+        untenstehenden Felder aus und klicke anschliessend auf "{{ v_co_member }} hinzufügen".
+        {% endblocktrans %}
+    </p>
+    <p>
+        {% blocktrans trimmed with v_co_member_pl=vocabulary.co_member_pl %}
+        Falls du keine {{ v_co_member_pl }} hinzufügen möchtest, klicke auf "Überspringen".<br>
+        Wenn du alle {{ v_co_member_pl }} hinzugefügt hast, klicke auf "Keine weiteren {{ v_co_member_pl }} hinzufügen".
+        {% endblocktrans %}
+    </p>
+{% endblock %}
 
-        {% if co_members|length > 0 %}
-            <h4>{{ v_co_member_pl }}</h4>
-            {% for co_member in co_members %}
-                <p>{{ co_member.first_name }} {{ co_member.last_name }}
-                    {% if not co_member.pk %}<a href="?edit={{forloop.counter}}" class="edit"><i class="fas fa-pen"></i></a>{% endif %}
-                    <a href="?remove={{forloop.counter}}" class="delete"><i class="fas fa-trash"></i></a>
-                </p>
-            {% endfor %}
-            <a href="?next" class="btn btn-success">
-                {% trans "Fertig" %}
-            </a>
-        {% endif %}
-    </div>
+{% block content %}
+    <form action="" method="post" id="new_member" novalidate>
+        {% crispy form %}
+    </form>
+
+    {% if co_members|length > 0 %}
+        <h4>{{ vocabulary.co_member_pl }}</h4>
+        {% for co_member in co_members %}
+            <p>{{ co_member.first_name }} {{ co_member.last_name }}
+                {% if not co_member.pk %}<a href="?edit={{forloop.counter}}" class="edit"><i class="fas fa-pen"></i></a>{% endif %}
+                <a href="?remove={{forloop.counter}}" class="delete"><i class="fas fa-trash"></i></a>
+            </p>
+        {% endfor %}
+        <a href="?next" class="btn btn-success">
+            {% trans "Fertig" %}
+        </a>
+    {% endif %}
 {% endblock %}

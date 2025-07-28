@@ -1,102 +1,128 @@
-{% extends "no_menu_base.html" %}
-{% load i18n %}
-{% load static %}
-{% load juntagrico.config %}
-{% block all_page_title %}
-    {% vocabulary "share_pl" as v_share_pl %}
-    <div class="page-title offset-md-2 col-md-8">
-        <h3>
-            {% blocktrans %}{{ v_share_pl }} erwerben{% endblocktrans %}
-        </h3>
+{% extends "juntagrico/signup/base.html" %} {% load i18n %} {% load static %} {%
+load juntagrico.config %} {% block title %} {% blocktrans with
+v_share_pl=vocabulary.share_pl %}{{ v_share_pl }} erwerben{% endblocktrans %} {%
+endblock %} {% block intro %}
+<p>
+  {% block intro_1 %} {% config "currency" as c_currency %} {% config
+  "share_price" as c_share_price %} {% enriched_organisation "D" as
+  v_d_enriched_organisation %} {% trans "Infos" %}: {% blocktrans trimmed with
+  v_member_type=vocabulary.member_type v_share=vocabulary.share
+  v_share_pl=vocabulary.share_pl %} Um {{ v_member_type }} bei {{
+  v_d_enriched_organisation }} zu werden, musst du mindestens 1 {{ v_share }}
+  ({{ c_currency }} {{ c_share_price }}) erwerben. Beim Austritt aus {{
+  v_d_enriched_organisation }} bekommst du deine {{ v_share_pl }}
+  zurückerstattet. {% endblocktrans %} {% endblock %}
+</p>
+
+<p>
+  {% block intro_2 %} {% config "required_shares" as c_required_shares %} {% if
+  shares.total_required > c_required_shares %} {% blocktrans trimmed with
+  st=shares.total_required v_subscription=vocabulary.subscription
+  v_share_pl=vocabulary.share_pl %} Für die von dir ausgewählten {{
+  v_subscription }}-Bestandteile brauchst du insgesamt {{ st }} {{ v_share_pl
+  }}. Du kannst natürlich noch mehr erwerben. {% endblocktrans %} {% elif
+  c_required_shares > 0 %} {% blocktrans trimmed with
+  v_share_pl=vocabulary.share_pl %} Du benötigst mindestens {{ c_required_shares
+  }} {{ v_share_pl }}. Du kannst natürlich noch mehr erwerben. {% endblocktrans
+  %} {% endif %} {% if co_members|length > 0 and shares.remaining_required > 0
+  %}
+  <br />
+  {% blocktrans trimmed with sr=shares.remaining_required
+  v_share_pl=vocabulary.share_pl v_co_member_pl=vocabulary.co_member_pl %} Teile
+  die restlichen benötigten {{ sr }} {{ v_share_pl }} unter dir und deinen {{
+  v_co_member_pl }} auf. {% endblocktrans %} {% endif %} {% endblock %}
+</p>
+{% endblock %} {% block content %} {% config "required_shares" as
+c_required_shares %} {% if shares.error %}
+<div class="alert alert-danger">
+  {% blocktrans trimmed with v_share_pl=vocabulary.share_pl
+  v_subscription=vocabulary.subscription %} Du brauchst entweder mehr {{
+  v_share_pl }} für die von dir gewählten {{ v_subscription }}-Bestandteile oder
+  eine deiner Eingaben ist keine positive Zahl. {% endblocktrans %} (x &#8713;
+  &#8469;)
+</div>
+{% endif %}
+<div class="row mb-4">
+  <div class="col-md-12">
+    Wenn du ein Abo von auVert🥕 beziehen möchtest, empfehlen wir dir, auch
+    mindestens einen Anteilschein zu erwerben, ist aber keine Bedingung.
+    <br /><br />
+    Anteilsscheine sind zinslose Darlehen und können bei Austritt aus der
+    Genossenschaft zurückgefordert werden. Mit einem Anteilschein erhältst du
+    die Mitgliedschaft in der Genossenschaft auVert🥕 und erwirbst das Stimm-
+    und Wahlrecht gemäss Statuten.
+  </div>
+</div>
+<form action="" method="post">
+  {% csrf_token %}
+  <div class="form-group row">
+    <label class="col-md-3 col-form-label">
+      {% blocktrans with v_share_pl=vocabulary.share_pl %}Neue {{ v_share_pl
+      }}{% endblocktrans %}:
+    </label>
+    <div class="col-md-3">
+      <input
+        type="number"
+        name="shares_mainmember"
+        class="form-control"
+        value="{{ member.new_shares|default:shares.total_required }}"
+        min="{{ shares.remaining_required_main_member }}"
+      />
     </div>
-{% endblock %}
-{% block allcontent %}
-    {% config "currency" as c_currency %}
-    {% config "share_price" as c_share_price %}
-    {% enriched_organisation "D" as v_d_enriched_organisation %}
-    {% vocabulary "share_pl" as v_share_pl %}
-    {% vocabulary "subscription" as v_subscription %}
-    {% vocabulary "member_type" as v_member_type %}
-    {% vocabulary "share" as v_share %}
-    {% vocabulary "co_member_pl" as v_co_member_pl %}
-    <div class="offset-md-2 col-md-8">
-        {% if shares.error %}
-            <div class="alert alert-danger">
-                {% blocktrans trimmed %}
-                Du brauchst entweder mehr {{ v_share_pl }} für die von dir gewählten {{ v_subscription }}-Bestandteile
-                oder eine deiner Eingaben ist keine positive Zahl.
-                {% endblocktrans %}
-                (x &#8713; &#8469;)
-            </div>
-        {% endif %}
-        <div class="row mb-4">
-            <div class="col-md-12">
-                Wenn du ein Abo von auVert🥕 beziehen möchtest, empfehlen wir dir, auch mindestens einen Anteilschein zu erwerben, ist aber keine Bedingung.
-                <br/><br/>
-                Anteilsscheine sind zinslose Darlehen und können bei Austritt aus der Genossenschaft zurückgefordert werden. Mit einem Anteilschein erhältst du die Mitgliedschaft in der Genossenschaft auVert🥕 und erwirbst das Stimm- und Wahlrecht gemäss Statuten.
-            </div>
-        </div>
-        <form action="" method="post">
-            {% csrf_token %}
-            <div class="form-group row">
-                <label class="col-md-3 col-form-label">
-                    {% blocktrans %}Neue {{ v_share_pl }}{% endblocktrans %}:
-                </label>
-                <div class="col-md-3">
-                    <input type="number" name="shares_mainmember" class="form-control" value="{{ member.new_shares|default:shares.total_required }}" min="{% if shares.existing_main_member == 0 %}1{% else %}0{% endif %}"/>
-                </div>
-                <label class="col-md-6 col-form-label">
-                    {% if shares.existing_main_member == 0 %}
-                        {% blocktrans trimmed %}
-                        Anteilschein(e) im Wert von je {{ c_currency }} {{ c_share_price }} erwerben.
-                        {% endblocktrans %}
-                    {% else %}
-                        {% blocktrans trimmed with msc=member.active_shares_count%}
-                        Du hast bereits {{ msc }} {{ v_share_pl }}
-                        {% endblocktrans %}
-                    {% endif %}
-                </label>
-            </div>
-            {% for co_member in co_members %}
-                <div class="form-group row">
-                    <label class="col-md-3 col-form-label">
-                        {{ co_member.first_name }} {{ co_member.last_name }}
-                    </label>
-                    <div class="col-md-3">
-                        <input type="number" name="{{ co_member.email }}" class="form-control" value="{{ co_member.new_shares|default:0 }}" min="0"/>
-                    </div>
-                    <label class="col-md-6 col-form-label">
-                        {% blocktrans trimmed with cac=co_member.active_shares_count %}
-                        besitzt bereits {{ cac }} {{ v_share_pl }}
-                        {% endblocktrans %}
-                    </label>
-                </div>
-            {% endfor %}
-            <div class="row mb-4">
-                <div class="col-md-12">
-                    {% trans "Infos" %}:
-                    {% blocktrans trimmed %}
-                    Leider ist es (noch) nicht möglich, 0 Anteilscheine auszuwählen. Wenn du keinen Anteilschein erwerben möchtest, 
-                    bitte “1” stehen lassen und auf der nächsten Seite unter “Kommentare” eine entsprechende Mitteilung machen. Danke!
-                    {% endblocktrans %}
-                </div>
-            </div>
-            <div class="form-group row">
-                <div class="offset-md-3 col-md-9">
-                    <button type="submit" class="btn btn-success">
-                        {% trans "Weiter" %}
-                    </button>
-                    <a href="{% url 'cs-cancel' %}" class="btn">
-                        {% trans "Abbrechen" %}
-                    </a>
-                </div>
-            </div>
-        </form>
+    <label class="col-md-6 col-form-label">
+      {% if shares.existing_main_member < c_required_shares %} {% if
+      c_required_shares == 1 %} {% blocktrans trimmed with
+      v_share=vocabulary.share %} Du brauchst als HauptbezieherIn mindestens {{
+      c_required_shares }} {{ v_share }}. {% endblocktrans %} {% elif
+      c_required_shares > 1 %} {% blocktrans trimmed with
+      v_share_pl=vocabulary.share_pl %} Du brauchst als HauptbezieherIn
+      mindestens {{ c_required_shares }} {{ v_share_pl }}. {% endblocktrans %}
+      {% endif %} {% elif shares.existing_main_member > 0 %} {% blocktrans
+      trimmed with msc=member.active_shares_count v_share_pl=vocabulary.share_pl
+      %} Du hast bereits {{ msc }} {{ v_share_pl }} {% endblocktrans %} {% endif
+      %}
+    </label>
+  </div>
+
+  {% for co_member in co_members %}
+  <div class="form-group row">
+    <label class="col-md-3 col-form-label">
+      {{ co_member.first_name }} {{ co_member.last_name }}
+    </label>
+    <div class="col-md-3">
+      <input
+        type="number"
+        name="{{ co_member.email }}"
+        class="form-control"
+        value="{{ co_member.new_shares|default:0 }}"
+        min="0"
+      />
     </div>
-{% endblock %}
-{% block scripts %}
-    <script type="text/javascript" src="{% static 'juntagrico/external/bootstrap-input-spinner.js' %}">
-    </script>
-    <script type="text/javascript" src="{% static 'juntagrico/external/require.min.js' %}" data-main="{% static 'juntagrico/js/initChangeExtra.js' %}">
-    </script>
+    <label class="col-md-6 col-form-label">
+      {% blocktrans trimmed with cac=co_member.active_shares_count
+      v_share_pl=vocabulary.share_pl %} besitzt bereits {{ cac }} {{ v_share_pl
+      }} {% endblocktrans %}
+    </label>
+  </div>
+  {% endfor %}
+
+  <div class="form-group row">
+    <div class="offset-md-3 col-md-9">
+      <button type="submit" class="btn btn-success">
+        {% trans "Weiter" %}
+      </button>
+      <a href="{% url 'cs-cancel' %}" class="btn"> {% trans "Abbrechen" %} </a>
+    </div>
+  </div>
+</form>
+{% endblock %} {% block scripts %}
+<script
+  type="text/javascript"
+  src="{% static 'juntagrico/external/bootstrap-input-spinner.js' %}"
+></script>
+<script
+  type="text/javascript"
+  src="{% static 'juntagrico/external/require.min.js' %}"
+  data-main="{% static 'juntagrico/js/initChangeExtra.js' %}"
+></script>
 {% endblock %}

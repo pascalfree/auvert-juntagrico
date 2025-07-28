@@ -57,6 +57,7 @@ TEMPLATES = [
                 'django.template.context_processors.tz',
                 'django.template.context_processors.request',
                 'django.contrib.messages.context_processors.messages',
+                'juntagrico.context_processors.vocabulary',
             ],
             'debug' : DEBUG,
         },
@@ -204,6 +205,7 @@ ORGANISATION_BANK_CONNECTION = {"PC" : "-",
             "NAME" : "Bank Gantrisch Genossenschaft",
             "ESR" : ""}
 SHARE_PRICE = "150"
+REQUIRED_SHARES = 0
 
 CONTACTS = {
     "general": "info@auvert.ch"
