@@ -5,4 +5,5 @@ class AuvertConfig(AppConfig):
     verbose_name = "Genossenschaft auVert"
 
     def ready(self):
-        pass
+        from juntagrico.forms import RegisterMemberForm
+        RegisterMemberForm.text['accept_wo_docs'] = 'Hiermit beantrage ich meine Aufnahme in der {}.'
